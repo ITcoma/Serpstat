@@ -1,7 +1,7 @@
 # Serpstat
 Скрипт, который одновременно установит на 10 одинаковых серверов c CentOS7 следующие пакеты:
 
-- php7 с модулями (bcmath, imagiсk, pdo, amqp);
+- php7 с модулями (bcmath, pecl-imagick, pdo, amqp);
 - phpmyadmin;
 - nginx;
 - mysql 5.6;
