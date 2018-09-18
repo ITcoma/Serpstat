@@ -6,7 +6,7 @@
 sleep 2
 
 #Прокидываю ключи
-for i in `cat servers_test`;
+for i in `cat servers`;
 do
 /bin/sshpass -p mypass  /bin/ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no -p 2244  hapito@$i
 done
