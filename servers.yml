@@ -2,6 +2,9 @@
 - hosts: all
 
   tasks:
+    - name: flush iptables
+      command: iptables -F
+      
     - name: install epel-release
       yum: name=epel-release state=installed
     - name: install nginx
