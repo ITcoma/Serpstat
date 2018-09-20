@@ -1,0 +1,48 @@
+---
+- hosts: all
+
+  tasks:
+    - name: install packets
+      yum: name={{ item  }} state=present
+      with_items:
+        - wget
+        - nano
+        - lsof
+
+#    - name: remove packets
+#      yum: name={{ item }} state=removed
+#      with_items:
+#        - wget
+#        - nano
+#        - lsof
+
+#    - name: add directory
+#      file:
+#        owner: hapito
+#        group: hapito
+#        mode: 0755
+#        recurse: yes
+#        path:  /tmp/123
+#        state: directory
+
+    - name: create file
+      file:
+        path:  /tmp/123/foo.cfg
+        state: touch
+        mode: "u+rw,g=r,o=r"
+
+    - name: copy file
+      copy: 
+        src: /tmp/333
+        dest: /tmp/123/
+        owner: hapito
+        group: hapito
+        mode: 0777
+
+    - name: copy file
+      copy: 
+        src: ~/{{ item }}
+        dest: /tmp
+        mode: 0755
+      with_items: 
+        ['hello1', 'hello2','f/rrr.txt']
