@@ -2,41 +2,87 @@
 - hosts: all
 
   tasks:
-    - name: flush iptables
-      command: iptables -F
-      
-    - name: install epel-release
+
+#    - name: Update package
+#      command: yum update -y
+
+    - name: Install pacckets
+      yum:
+        name: "{{ item }}"
+      with_items:
+        - wget
+        - nano
+        - git
+
+    - name: Install epel-release
       yum: name=epel-release state=installed
+
+    - name: Disable SELinux
+      command: sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
+
+
+    - name: Firewall 80
+      firewalld:
+        port: 80/tcp
+        permanent: true
+        state: enabled
+
+    - name: Firewall 8080
+      firewalld:
+        port: 8080/tcp
+        permanent: true
+        state: enabled
+
+    - name: Firewall reload
+      command: firewall-cmd --reload
+
+   
     - name: install nginx
       yum: name=nginx state=present
-    - name: start nginx
-      service:
-          name: nginx
-          state: started
-    
-    - name: install redis
+
+    - name: copy files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}" 
+        mode: "{{ item.mode }}"
+      with_items:
+        - { src: 'nginx.conf', dest: '/etc/nginx/nginx.conf', mode: '0644' }
+        - { src: 'index.php', dest: '/usr/share/nginx/html/index.php', mode: '0755' }
+        - { src: 'phpmyadmin.sh', dest: '/tmp/phpmyadmin.sh', mode: '0755' }
+        - { src: 'phpMyAdmin.conf', dest: '/etc/nginx/conf.d/phpMyAdmin.conf', mode: '0644' }
+
+    - name: Add REMI for php7
+      command: rpm -Uvh "{{ item }}" 
+      with_items:
+        - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+        - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm        
+
+
+    - name: Install php72
+      yum:
+        name: "{{ item }}"
+      with_items:
+        - php72
+        - php72w
+        - php72w-fpm
+        - php72w-mysql
+        - php72w-mysqli
+        - php72w-mbstring 
+
+
+    - name: Start php-fpm
+      service: name=php-fpm state=started enabled=yes
+
+    - name: Start nginx
+      service: name=nginx state=started enabled=yes
+
+    - name: Install redis
       yum: name=redis state=latest
 
-    - name: redis start
+    - name: Start redis 
       service: name=redis state=started enabled=yes
 
-    - name: Add repository 'remi-repo'
-      command: rpm -ih http://rpms.famillecollet.com/enterprise/remi-release-7.rpm creates=/etc/yum.repos.d/remi.repo
-
-    - name: install php70
-      yum: name={{ item }} enablerepo=epel,remi,remi-php70 state=installed
-      with_items: 
-        - php70
-        - php70-php
-        - php70-php-pdo
-        - php70-php-bcmath
-        - php70-php-pecl-imagick
-        - php70-php-amqp
-
-    - name: install phpmyadmin
-      yum: name=phpmyadmin state=installed
-
-    - name: install rpm mysql
+    - name: Install mysql from rep
       yum: name=http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
       state: present
 
@@ -58,3 +104,19 @@
         name=mysqld
         state=started
         enabled=yes
+
+    - name: restart php-fpm
+      service: name=php-fpm state=restarted
+
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+
+    - name: Install phpmyadmin
+      command: bash "{{ item }}"
+      with_items: 
+        - /tmp/phpmyadmin.sh
+
+
+#    - name: restart
+#      command: reboot
