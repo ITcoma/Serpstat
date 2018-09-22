@@ -51,12 +51,35 @@
         - { src: 'phpmyadmin.sh', dest: '/tmp/phpmyadmin.sh', mode: '0755' }
         - { src: 'phpMyAdmin.conf', dest: '/etc/nginx/conf.d/phpMyAdmin.conf', mode: '0644' }
 
+    - name: Install mysql from rep
+      yum: name=http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+      state: present
+
+
+    - name: install mysqld
+      yum:
+        name={{ item }}
+        enablerepo=mysql56-community
+        disablerepo=mysql57-community
+        state=present
+      with_items:
+        - mysql-community-server
+        - mysql-community-client
+        - mysql-community-common
+        - mysql-community-libs
+        - mysql-community-libs-compat
+
+    - name: mysqld start
+      service:
+        name=mysqld
+        state=started
+        enabled=yes
+
     - name: Add REMI for php7
       command: rpm -Uvh "{{ item }}" 
       with_items:
         - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
         - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm        
-
 
     - name: Install php72
       yum:
@@ -81,29 +104,6 @@
 
     - name: Start redis 
       service: name=redis state=started enabled=yes
-
-    - name: Install mysql from rep
-      yum: name=http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
-      state: present
-
-    - name: install mysqld
-      yum: 
-        name={{ item }}
-        enablerepo=mysql56-community
-        disablerepo=mysql57-community
-        state=present
-      with_items:
-        - mysql-community-server
-        - mysql-community-client
-        - mysql-community-common
-        - mysql-community-libs
-        - mysql-community-libs-compat
-
-    - name: mysqld start
-      service:
-        name=mysqld
-        state=started
-        enabled=yes
 
     - name: restart php-fpm
       service: name=php-fpm state=restarted
