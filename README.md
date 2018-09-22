@@ -7,6 +7,6 @@
 - mysql 5.6;
 - redis.
 
-Скрипт запускается с OS Centos 7  3.10.0-862.el7.x86_64 х86_64 GNU/Linux
+Скрипт start.sh запускается с OS Centos 7  3.10.0-862.el7.x86_64 х86_64 GNU/Linux
 
 
