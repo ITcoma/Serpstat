@@ -21,17 +21,15 @@
       command: sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
 
 
-    - name: Firewall 80
+    - name: Open 80, 8080 ports
       firewalld:
-        port: 80/tcp
+        port: "{{item.port}}"
         permanent: true
         state: enabled
-
-    - name: Firewall 8080
-      firewalld:
-        port: 8080/tcp
-        permanent: true
-        state: enabled
+        immediate: true
+      with_items:
+        - {port: '8080/tcp'}
+        - {port: '80/tcp'}
 
     - name: Firewall reload
       command: firewall-cmd --reload
@@ -75,22 +73,33 @@
         state=started
         enabled=yes
 
-    - name: Add REMI for php7
-      command: rpm -Uvh "{{ item }}" 
+    - name: Add ius repositary
+      command: "{{ item  }}"
       with_items:
-        - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
-        - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm        
+        - curl 'https://setup.ius.io/' -o setup-ius.sh
+        - bash setup-ius.sh
 
-    - name: Install php72
+#    - name: Add REMI for php7
+#      command: rpm -Uvh "{{ item }}" 
+#      with_items:
+#        - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+#        - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+#        - https://mirror.webtatic.com/yum/el7/webtatic-release.rpm        
+
+    - name: Install php70u
       yum:
         name: "{{ item }}"
       with_items:
-        - php72
-        - php72w
-        - php72w-fpm
-        - php72w-mysql
-        - php72w-mysqli
-        - php72w-mbstring 
+        - php70u
+        - php70u-fpm
+        - php70u-mysqlnd
+        - php70u-mbstring
+        - php70u-bcmath
+        - php70u-pecl-imagick
+        - php70u-pdo
+        - php70u-pecl-amqp
+        - php70u-json
+        - php70u-cli 
 
 
     - name: Start php-fpm
